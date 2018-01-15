@@ -14,6 +14,7 @@ import Vue from 'vue'
 import Quasar from 'quasar'
 import router from './router'
 import Vuelidate from 'vuelidate'
+import store from './stores';
 
 Vue.use(Vuelidate)
 Vue.config.productionTip = false
@@ -32,6 +33,7 @@ Quasar.start(() => {
   new Vue({
     el: '#q-app',
     router,
+    store,
     render: h => h(require('./App').default)
   })
 })
