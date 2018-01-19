@@ -9,26 +9,29 @@
 
             <div class="row justify-center gap-4-top">
                 <div class="col-11">
-                    <q-field :error="false"
-                             error-label="">
+                    <q-field :error="$v.username.$error"
+                             error-label="Username tidak boleh kosong">
                         <q-input type="text"
                                  :before="[{icon: 'ion-android-person', handler(){}}]"
                                  placeholder="Username"
                                  class="group"
-                                 v-model="username" autofocus></q-input>
+                                 v-model="username"
+                                 autofocus
+                                 @blur="$v.username.$touch"></q-input>
                     </q-field>
                 </div>
             </div>
 
             <div class="row justify-center">
                 <div class="col-11">
-                    <q-field :error="false"
-                             error-label="">
+                    <q-field :error="$v.password.$error"
+                             error-label="Password tidak boleh kosong">
                         <q-input type="password"
                                  :before="[{icon: 'ion-android-lock', handler(){}}]"
                                  placeholder="Password"
                                  class="group"
-                                 v-model="password"></q-input>
+                                 v-model="password"
+                                 @blur="$v.password.$touch"></q-input>
                     </q-field>
                 </div>
             </div>
@@ -36,7 +39,10 @@
             <div class="row justify-center gap-3">
                 <div class="col-11">
                     <q-btn color="negative"
-                           class="full-width" big>MASUK</q-btn>
+                           class="full-width"
+                           big
+                           @click="process_auth()"
+                           :disabled="$v.username.$invalid || $v.password.$invalid">MASUK</q-btn>
                 </div>
             </div>
         </div>
@@ -50,6 +56,7 @@
 </template>
 
 <script>
+    import {required} from 'vuelidate/lib/validators';
     import {
         QField,
         QInput,
@@ -67,6 +74,21 @@
             return {
                 username: null,
                 password: null
+            }
+        },
+        validations: {
+            username: {required},
+            password: {required}
+        },
+        methods: {
+            process_auth() {
+                const formAuth = new FormData;
+                formAuth.set('username', this.username);
+                formAuth.set('password', this.password);
+
+                this.$store.commit('set_errors', {});
+                this.$store.dispatch('req_credential', {user: this.username, formData: formAuth});
+                this.$router.push({name: 'main'});
             }
         }
     }
