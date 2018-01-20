@@ -1,9 +1,19 @@
 <template>
     <div>
         <div class="layout-padding">
+            <q-alert class="layout-padding"
+                color="red"
+                icon="ion-alert-circled"
+                enter="bounceInDown"
+                leave="bounceOutUp"
+                dismissible
+                position="top"
+                v-model="error">
+                {{this.pesan}}
+            </q-alert>
             <div class="row justify-center">
-                <div class="col-8">
-                    <img src="../assets/kencleng-logo.svg">
+                <div class="col-8 text-center">
+                    <img src="../assets/kencleng-logo.svg" style="width: 220px;">
                 </div>
             </div>
 
@@ -57,10 +67,13 @@
 
 <script>
     import {required} from 'vuelidate/lib/validators';
+    import 'quasar-extras/animate/bounceInDown.css'
+    import 'quasar-extras/animate/bounceOutUp.css'
     import {
         QField,
         QInput,
-        QBtn
+        QBtn,
+        QAlert
     } from 'quasar';
 
     export default {
@@ -68,12 +81,14 @@
         components: {
             QField,
             QInput,
-            QBtn
+            QBtn,
+            QAlert
         },
         data() {
             return {
                 username: null,
-                password: null
+                password: null,
+                pesan: null
             }
         },
         validations: {
@@ -86,9 +101,27 @@
                 formAuth.set('username', this.username);
                 formAuth.set('password', this.password);
 
-                this.$store.commit('set_errors', {});
+                this.$store.commit('set_errors', null);
                 this.$store.dispatch('req_credential', {user: this.username, formData: formAuth});
                 this.$router.push({name: 'main'});
+            }
+        },
+        computed: {
+            error: {
+                get() {
+                    const pesan = this.$store.getters.get_errors;
+
+                    if (pesan) {
+                        this.pesan = pesan.non_field_errors[0];
+                        return true
+                    } else {
+                        this.pesan = null;
+                        return false;
+                    }
+                },
+                set(val) {
+                    return;
+                }
             }
         }
     }

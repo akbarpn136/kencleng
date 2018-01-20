@@ -24,13 +24,15 @@ export default new Vuex.Store({
         }
     },
     mutations: {
-        set_credential (state, payload={}) {
+        set_credential (state, payload=null) {
             if (payload) {
                 state.credential.username = payload.user;
                 state.credential.token = payload.token.token;
+                localStorage.setItem('token', JSON.stringify({user: payload.user, token: payload.token.token}));
             } else {
                 state.credential.username = null;
                 state.credential.token = null;
+                localStorage.removeItem('token');
             }
         },
         set_errors (state, err) {
