@@ -28,7 +28,10 @@ export default new Vuex.Store({
             if (payload) {
                 state.credential.username = payload.user;
                 state.credential.token = payload.token.token;
-                localStorage.setItem('token', JSON.stringify({user: payload.user, token: payload.token.token}));
+                localStorage.setItem('token', JSON.stringify({
+                    user: payload.user,
+                    token: payload.token.token
+                }));
             } else {
                 state.credential.username = null;
                 state.credential.token = null;

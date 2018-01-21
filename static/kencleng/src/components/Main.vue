@@ -27,7 +27,7 @@
             -->
 
             <q-list no-border link inset-delimiter class="no-padding">
-                <q-list-header class="bg-primary text-white">Essential Links</q-list-header>
+                <q-list-header class="bg-primary text-white uppercase">{{user || 'Anonymouse'}}</q-list-header>
                 <q-item>
                     <q-item-side icon="ion-home" class="text-white"/>
                     <q-item-main label="Utama" class="text-white text-bold"/>
@@ -84,7 +84,12 @@
         },
         data() {
             return {
+                user: null
             }
+        },
+        created() {
+            const data = JSON.parse(localStorage.getItem('token'));
+            this.user = data.user;
         },
         computed: {
 

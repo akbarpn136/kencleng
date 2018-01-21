@@ -25,7 +25,7 @@ const router = new VueRouter({
     scrollBehavior: () => ({y: 0}),
 
     routes: [
-        {path: '/', component: load('Main'), name: 'main', meta: {requireAuth: true}},
+        {path: '/', component: load('Main'), name: 'utama', meta: {requireAuth: true}},
         {path: '/login', component: load('Login'), name: 'login', meta: {requireAuth: false}},
 
         // Always leave this last one
