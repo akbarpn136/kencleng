@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
+import router from '../router';
 
 Vue.use(Vuex);
 const URL = process.env.NODE_ENV === 'development' ?
@@ -32,6 +33,8 @@ export default new Vuex.Store({
                     user: payload.user,
                     token: payload.token.token
                 }));
+
+                router.push({name: 'utama'});
             } else {
                 state.credential.username = null;
                 state.credential.token = null;
