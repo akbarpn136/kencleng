@@ -55,6 +55,16 @@ export default new Vuex.Store({
                 .catch((err) => {
                     context.commit('set_errors', err.response.data);
                 });
+        },
+        req_register (context, payload) {
+            const URL_OTEN = `${URL}kencleng/register/`;
+            axios.post(URL_OTEN, payload.formData)
+                .then((res) => {
+                    context.commit('set_credential', {user: payload.user, token: res.data});
+                })
+                .catch((err) => {
+                    context.commit('set_errors', err.response.data);
+                });
         }
     }
 });

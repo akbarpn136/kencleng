@@ -27,6 +27,7 @@ const router = new VueRouter({
     routes: [
         {path: '/', component: load('Main'), name: 'utama', meta: {requireAuth: true}},
         {path: '/login', component: load('Login'), name: 'login', meta: {requireAuth: false}},
+        {path: '/register', component: load('Register'), name: 'register', meta: {requireAuth: false}},
 
         // Always leave this last one
         {path: '*', component: load('Error404'), name: 'error', meta: {requireAuth: false}}

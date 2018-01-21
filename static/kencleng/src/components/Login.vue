@@ -1,7 +1,7 @@
 <template>
     <q-layout
         ref="layout"
-        view="lHh Lpr fff">
+        view="lHh Lpr lFf">
 
         <div class="layout-padding">
             <q-alert class="layout-padding"
@@ -68,7 +68,9 @@
                    class="no-padding">
             <q-btn color="white"
                    class="full-width no-padding"
-                   big flat>BELUM DAFTAR?
+                   big
+                   flat
+                   @click="btnRegister">BELUM DAFTAR?
             </q-btn>
         </q-toolbar>
     </q-layout>
@@ -109,6 +111,9 @@
             password: {required}
         },
         methods: {
+            btnRegister() {
+                this.$router.push({name: 'register'});
+            },
             process_auth() {
                 const formAuth = new FormData;
                 formAuth.set('username', this.username);

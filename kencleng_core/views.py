@@ -1,8 +1,9 @@
+from django.db import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from django.contrib.auth.models import User
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 
@@ -27,15 +28,24 @@ class Register(generics.CreateAPIView):
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
 
-        user = User.objects.create_user(username, email, password)
-        user.first_name = first_name
-        user.last_name = last_name
-        user.save()
+        try:
+            user = User.objects.create_user(username, email, password)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.save()
 
-        # Generate token for user
-        token = Token.objects.create(user=user)
+            # Generate token for user
+            token = Token.objects.create(user=user)
 
-        return Response({'detail': 'User has been created with Token: ' + token.key})
+            return Response({
+                'detail': 'User has been created.',
+                'token': token.key
+            })
+
+        except IntegrityError:
+            return Response({
+                'detail': 'Your username is not excepted'
+            }, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 class ChangePassword(generics.CreateAPIView):
