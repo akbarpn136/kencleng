@@ -61,6 +61,9 @@ export default new Vuex.Store({
                 state.transaksi_lokal.push(el);
             });
         },
+        reset_transaksi_lokal (state) {
+            state.transaksi_lokal = [];
+        },
         set_saldo (state, payload) {
             state.saldo = payload;
         },

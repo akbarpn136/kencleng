@@ -47,7 +47,7 @@
             <q-alert
                 color="blue"
                 icon="ion-information-circled"
-                style="margin-bottom: 25px;" v-if="transaksi.count === 0">
+                style="margin-bottom: 25px;" v-if="alertShow">
                 Transaksi masih kosong. Coba tambah baru.
             </q-alert>
             <q-infinite-scroll ref="inf"
@@ -144,7 +144,8 @@
         data() {
             return {
                 user: null,
-                token: null
+                token: null,
+                alertShow: false
             }
         },
         mounted() {
