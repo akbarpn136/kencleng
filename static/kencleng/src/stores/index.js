@@ -14,11 +14,19 @@ export default new Vuex.Store({
             username: null,
             token: null,
         },
+        transaksi: null,
+        saldo: 0,
         errors: null
     },
     getters: {
         get_credential: state => {
             return state.credential;
+        },
+        get_transaksi: state => {
+            return state.transaksi;
+        },
+        get_saldo: state => {
+            return state.saldo;
         },
         get_errors: state => {
             return state.errors;
@@ -40,6 +48,12 @@ export default new Vuex.Store({
                 state.credential.token = null;
                 localStorage.removeItem('token');
             }
+        },
+        set_transaksi (state, payload) {
+            state.transaksi = payload;
+        },
+        set_saldo (state, payload) {
+            state.saldo = payload;
         },
         set_errors (state, err) {
             state.errors = err;
@@ -65,6 +79,29 @@ export default new Vuex.Store({
                 .catch((err) => {
                     context.commit('set_errors', err.response.data);
                 });
+        },
+        req_transaksi (context, payload) {
+            const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/`;
+            axios.get(URL_TRANSAKSI, {
+                headers: {'Authorization': `token ${payload.token}`},
+                params: {
+                    page: payload.page
+                }
+            }).then((res) => {
+                context.commit('set_transaksi', res.data);
+            }).catch((err) => {
+                context.commit('set_errors', err.response.data);
+            });
+        },
+        req_saldo (context, payload) {
+            const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/saldo/`;
+            axios.get(URL_TRANSAKSI, {
+                headers: {'Authorization': `token ${payload.token}`},
+            }).then((res) => {
+                context.commit('set_saldo', res.data);
+            }).catch((err) => {
+                context.commit('set_errors', err.response.data);
+            });
         }
     }
 });

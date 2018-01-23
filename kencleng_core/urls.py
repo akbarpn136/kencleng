@@ -9,5 +9,6 @@ urlpatterns = [
     url(r'^change_name/$', view=views.ChangeName.as_view()),
     url(r'^login/$', view=vw.obtain_auth_token),
     url(r'^v1/transaksi/$', view=views.Transaksi.as_view()),
+    url(r'^v1/transaksi/saldo/$', view=views.TransaksiSum.as_view()),
     url(r'^v1/transaksi/(?P<transaksi_id>\d+)/$', view=views.TransaksiModifikasi.as_view())
 ]

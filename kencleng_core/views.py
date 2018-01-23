@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
@@ -78,6 +79,19 @@ class Transaksi(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(pemilik=self.request.user)
+
+
+class TransaksiSum(generics.ListAPIView):
+    queryset = models.Transaksi.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = serializers.TransaksiSerializer
+
+    def get_queryset(self):
+        return models.Transaksi.objects.filter(pemilik=self.request.user)
+
+    def get(self, request, *args, **kwargs):
+        saldo = self.get_queryset().aggregate(Sum('jumlah'))
+        return Response({'detail': saldo})
 
 
 class TransaksiModifikasi(generics.RetrieveUpdateDestroyAPIView):
