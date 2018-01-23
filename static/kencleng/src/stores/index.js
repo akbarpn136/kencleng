@@ -15,6 +15,7 @@ export default new Vuex.Store({
             token: null,
         },
         transaksi: null,
+        transaksi_lokal: [],
         saldo: 0,
         errors: null
     },
@@ -24,6 +25,9 @@ export default new Vuex.Store({
         },
         get_transaksi: state => {
             return state.transaksi;
+        },
+        get_transaksi_lokal: state => {
+            return state.transaksi_lokal;
         },
         get_saldo: state => {
             return state.saldo;
@@ -51,6 +55,11 @@ export default new Vuex.Store({
         },
         set_transaksi (state, payload) {
             state.transaksi = payload;
+        },
+        set_transaksi_lokal (state, payload) {
+            payload.forEach(el => {
+                state.transaksi_lokal.push(el);
+            });
         },
         set_saldo (state, payload) {
             state.saldo = payload;

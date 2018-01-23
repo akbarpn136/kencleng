@@ -43,55 +43,57 @@
             </q-list>
         </div>
 
-        <!--
-          Replace following <div> with
-          <router-view /> component
-          if using subRoutes
-        -->
         <div class="layout-padding">
             <q-alert
                 color="blue"
                 icon="ion-information-circled"
-                style="margin-bottom: 25px;" v-if="false">
+                style="margin-bottom: 25px;" v-if="transaksi.count === 0">
                 Transaksi masih kosong. Coba tambah baru.
             </q-alert>
-
-            <q-card
-                class="bg-white"
-                v-else
-                v-for="trans of transaksi.results"
-                :key="trans.id"
-                style="margin: 0 0 12px 0;">
-                <q-card-title>
-                    {{trans.dibuat | tgl}}
-                    <q-icon link slot="right" name="more_vert">
-                        <q-popover ref="popover">
-                            <q-list link class="no-border">
-                                <q-item @click="$refs.popover.close()">
-                                    <q-item-main label="Remove Card"/>
-                                </q-item>
-                                <q-item @click="$refs.popover.close()">
-                                    <q-item-main label="Send Feedback"/>
-                                </q-item>
-                                <q-item @click="$refs.popover.close()">
-                                    <q-item-main label="Share"/>
-                                </q-item>
-                            </q-list>
-                        </q-popover>
-                    </q-icon>
-                </q-card-title>
-                <q-card-main>
-                    {{trans.deskripsi}}
-                    <div class="text-right" style="margin-top: 15px;">
+            <q-infinite-scroll ref="inf"
+                               :handler="loadMore">
+                <q-card
+                    class="bg-white"
+                    v-for="trans of transaksi_lokal"
+                    :key="trans.id"
+                    style="margin: 0 0 12px 0;">
+                    <q-card-title>
+                        {{trans.dibuat | tgl}}
+                        <q-icon link slot="right" name="more_vert">
+                            <q-popover ref="popover">
+                                <q-list link class="no-border">
+                                    <q-item @click="$refs.popover.close()">
+                                        <q-item-main label="Remove Card"/>
+                                    </q-item>
+                                    <q-item @click="$refs.popover.close()">
+                                        <q-item-main label="Send Feedback"/>
+                                    </q-item>
+                                    <q-item @click="$refs.popover.close()">
+                                        <q-item-main label="Share"/>
+                                    </q-item>
+                                </q-list>
+                            </q-popover>
+                        </q-icon>
+                    </q-card-title>
+                    <q-card-main>
+                        {{trans.deskripsi}}
+                        <div class="text-right" style="margin-top: 15px;">
                         <span class="text-italic"
                               :class="(parseInt(trans.jumlah) > 0 ? 'text-positive':'text-negative')">{{trans.jumlah}}</span>
-                    </div>
-                </q-card-main>
-            </q-card>
+                        </div>
+                    </q-card-main>
+                </q-card>
+
+                <div slot="message" class="row justify-center">
+                    <q-spinner-facebook
+                        color="tertiary"
+                        :size="35"></q-spinner-facebook>
+                </div>
+            </q-infinite-scroll>
         </div>
         <q-toolbar slot="footer">
             <q-toolbar-title class="text-center">
-                Saldo: {{saldo.detail.jumlah__sum | currency}}
+                Saldo: {{saldo.detail.jumlah__sum}}
             </q-toolbar-title>
         </q-toolbar>
     </q-layout>
@@ -113,7 +115,9 @@
         QCard,
         QCardTitle,
         QCardMain,
-        QPopover
+        QPopover,
+        QInfiniteScroll,
+        QSpinnerFacebook
     } from 'quasar';
 
     export default {
@@ -133,7 +137,9 @@
             QCard,
             QCardTitle,
             QCardMain,
-            QPopover
+            QPopover,
+            QInfiniteScroll,
+            QSpinnerFacebook
         },
         data() {
             return {
@@ -145,23 +151,45 @@
             const data = JSON.parse(localStorage.getItem('token'));
             this.user = data.user;
             this.token = data.token;
-            this.$store.dispatch('req_transaksi', {
-                token: this.token,
-                page: 1
-            });
+
             this.$store.dispatch('req_saldo', {
                 token: this.token
             });
         },
         computed: {
+            transaksi_lokal() {
+                return this.$store.getters.get_transaksi_lokal ? this.$store.getters.get_transaksi_lokal : [];
+            },
             transaksi() {
-                return this.$store.getters.get_transaksi;
+                return this.$store.getters.get_transaksi ? this.$store.getters.get_transaksi : {
+                    results: [],
+                    count: 0,
+                    next: null
+                };
             },
             saldo() {
-                return this.$store.getters.get_saldo;
+                return this.$store.getters.get_saldo ? this.$store.getters.get_saldo : {
+                    detail: {jumlah__sum: 0}
+                };
             }
         },
         methods: {
+            loadMore(index, done) {
+                setTimeout(() => {
+                    this.$store.dispatch('req_transaksi', {
+                        token: this.token,
+                        page: index
+                    });
+
+                    this.$store.commit('set_transaksi_lokal', this.transaksi.results);
+
+                    if (this.transaksi.previous && !this.transaksi.next) {
+                        this.$refs.inf.stop();
+                    }
+
+                    done();
+                }, 1500)
+            }
         },
         filters: {
             tgl: function (value) {
