@@ -94,7 +94,8 @@ class TransaksiSum(generics.ListAPIView):
 
     def get(self, request, *args, **kwargs):
         saldo = self.get_queryset().aggregate(Sum('jumlah'))
-        return Response({'detail': saldo})
+
+        return Response({'detail': saldo['jumlah__sum'] if saldo['jumlah__sum'] is not None else 0})
 
 
 class TransaksiModifikasi(generics.RetrieveUpdateDestroyAPIView):

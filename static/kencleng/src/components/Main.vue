@@ -63,13 +63,10 @@
                             <q-popover ref="popover">
                                 <q-list link class="no-border">
                                     <q-item @click="$refs.popover.close()">
-                                        <q-item-main label="Remove Card"/>
+                                        <q-item-main label="Ubah"/>
                                     </q-item>
                                     <q-item @click="$refs.popover.close()">
-                                        <q-item-main label="Send Feedback"/>
-                                    </q-item>
-                                    <q-item @click="$refs.popover.close()">
-                                        <q-item-main label="Share"/>
+                                        <q-item-main label="Hapus"/>
                                     </q-item>
                                 </q-list>
                             </q-popover>
@@ -95,7 +92,7 @@
                  v-model="buka"
                  position="bottom" :content-css="{'padding-right': '15px', 'padding-left': '15px'}">
             <div class="layout-padding">
-                <h4>{{this.mode | capitalize}} Transaksi</h4>
+                <h4 style="margin-bottom: 35px;">{{this.mode | capitalize}} Transaksi</h4>
                 <q-field :error="$v.deskripsi.$error"
                          error-label="Deskripsi harus diisi">
                     <q-input type="textarea"
@@ -117,13 +114,31 @@
                              v-model="jumlah"
                              @blur="$v.jumlah.$touch"></q-input>
                 </q-field>
-                <q-btn color="grey" outline
-                       @click="$refs.basicModal.close()">Batal</q-btn>
+
+                <div class="row sm-gutter">
+                    <div class="col">
+                        <q-btn color="primary"
+                               icon="ion-log-in" class="full-width"
+                               @click="prosesTransaksi(1)"
+                               :disabled="$v.$invalid">
+                            Uang Masuk
+                        </q-btn>
+                    </div>
+
+                    <div class="col">
+                        <q-btn color="negative"
+                               icon="ion-log-out" class="full-width"
+                               @click="prosesTransaksi(-1)"
+                               :disabled="$v.$invalid">
+                            Uang Keluar
+                        </q-btn>
+                    </div>
+                </div>
             </div>
         </q-modal>
         <q-toolbar slot="footer">
             <q-toolbar-title class="text-center">
-                Saldo: {{saldo.detail.jumlah__sum}}
+                Saldo: {{saldo.detail}}
             </q-toolbar-title>
         </q-toolbar>
     </q-layout>
@@ -198,6 +213,7 @@
             this.user = data.user;
             this.token = data.token;
 
+            this.$store.commit('reset_transaksi_lokal');
             this.$store.dispatch('req_saldo', {
                 token: this.token
             });
@@ -209,17 +225,22 @@
             transaksi() {
                 return this.$store.getters.get_transaksi ? this.$store.getters.get_transaksi : {
                     results: [],
-                    count: 0,
-                    next: null
+                    count: -1,
+                    next: null,
+                    previous: null
                 };
             },
             saldo() {
                 return this.$store.getters.get_saldo ? this.$store.getters.get_saldo : {
-                    detail: {jumlah__sum: 0}
+                    detail: 0
                 };
             }
         },
         methods: {
+            basicModalShow(mode) {
+                this.buka = true;
+                this.mode = mode;
+            },
             loadMore(index, done) {
                 setTimeout(() => {
                     this.$store.dispatch('req_transaksi', {
@@ -227,19 +248,56 @@
                         page: index
                     });
 
-                    this.$store.commit('set_transaksi_lokal', this.transaksi.results);
+                    this.$store.commit('set_transaksi_lokal', {
+                        data: this.transaksi.results,
+                        mode: 'online'
+                    });
 
-                    if (this.transaksi.previous && !this.transaksi.next) {
+                    if (this.transaksi.count > 0) {
+                        this.alertShow = false;
+                        if (this.transaksi.previous && !this.transaksi.next) {
+                            this.$refs.inf.stop();
+                        }
+                        else if (!this.transaksi.previous && !this.transaksi.next) {
+                            this.$refs.inf.stop();
+                        }
+                    } else if (this.transaksi.count === 0) {
                         this.$refs.inf.stop();
-                        if (this.transaksi.count && this.transaksi.count === 0) this.alertShow = true;
+                        this.alertShow = true;
                     }
 
                     done();
-                }, 1500)
+                }, 1000)
             },
-            basicModalShow(mode) {
-                this.buka = true;
-                this.mode = mode;
+            prosesTransaksi(gain) {
+                const transaksiForm = new FormData();
+                let transaksiLokal = this.$store.getters.get_transaksi_lokal;
+                const userInput = {
+                    id: Math.floor((1 + Math.random()) * 0x10000),
+                    dibuat: new Date().toLocaleDateString(),
+                    jumlah: gain * this.jumlah,
+                    deskripsi: this.deskripsi
+                }
+
+                if (!this.$v.$invalid) {
+                    this.$store.commit('set_saldo', gain * this.jumlah);
+
+                    transaksiForm.set('deskripsi', this.deskripsi);
+                    transaksiForm.set('jumlah', gain * this.jumlah);
+
+                    this.$store.dispatch('req_tambahTransaksi', {
+                        formData: transaksiForm,
+                        token: this.token,
+                        userInput
+                    });
+
+                    this.buka = false;
+                    this.alertShow = false;
+                    this.$store.commit('set_transaksi_lokal', {
+                        data: [userInput],
+                        mode: 'offline'
+                    });
+                }
             }
         },
         filters: {

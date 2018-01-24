@@ -16,6 +16,7 @@ export default new Vuex.Store({
         },
         transaksi: null,
         transaksi_lokal: [],
+        transaksi_addon: null,
         saldo: 0,
         errors: null
     },
@@ -28,6 +29,9 @@ export default new Vuex.Store({
         },
         get_transaksi_lokal: state => {
             return state.transaksi_lokal;
+        },
+        get_transaksi_addon: state => {
+            return state.transaksi_addon;
         },
         get_saldo: state => {
             return state.saldo;
@@ -57,15 +61,19 @@ export default new Vuex.Store({
             state.transaksi = payload;
         },
         set_transaksi_lokal (state, payload) {
-            payload.forEach(el => {
-                state.transaksi_lokal.push(el);
+            payload.data.forEach(el => {
+                if (payload.mode === 'online') state.transaksi_lokal.push(el);
+                else state.transaksi_lokal.unshift(el);
             });
         },
         reset_transaksi_lokal (state) {
             state.transaksi_lokal = [];
         },
+        set_transaksi_addon (state, payload) {
+            state.transaksi_addon = payload;
+        },
         set_saldo (state, payload) {
-            state.saldo = payload;
+            state.saldo += payload;
         },
         set_errors (state, err) {
             state.errors = err;
@@ -105,12 +113,22 @@ export default new Vuex.Store({
                 context.commit('set_errors', err.response.data);
             });
         },
+        req_tambahTransaksi (context, payload) {
+            const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/`;
+            axios.post(URL_TRANSAKSI, payload.formData, {
+                headers: {'Authorization': `token ${payload.token}`}
+            }).then(() => {
+                context.commit('set_transaksi_addon', payload.userInput);
+            }).catch((err) => {
+                context.commit('set_errors', err.response.data);
+            });
+        },
         req_saldo (context, payload) {
             const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/saldo/`;
             axios.get(URL_TRANSAKSI, {
                 headers: {'Authorization': `token ${payload.token}`},
             }).then((res) => {
-                context.commit('set_saldo', res.data);
+                context.commit('set_saldo', res.data.detail);
             }).catch((err) => {
                 context.commit('set_errors', err.response.data);
             });
