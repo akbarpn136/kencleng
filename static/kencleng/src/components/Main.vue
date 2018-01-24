@@ -14,7 +14,7 @@
                      style="width: 70px">
             </q-toolbar-title>
 
-            <q-btn flat>
+            <q-btn flat @click="basicModalShow('tambah')">
                 <q-icon name="ion-plus-round"/>
             </q-btn>
         </q-toolbar>
@@ -91,6 +91,36 @@
                 </div>
             </q-infinite-scroll>
         </div>
+        <q-modal ref="basicModal"
+                 v-model="buka"
+                 position="bottom" :content-css="{'padding-right': '15px', 'padding-left': '15px'}">
+            <div class="layout-padding">
+                <h4>{{this.mode | capitalize}} Transaksi</h4>
+                <q-field :error="$v.deskripsi.$error"
+                         error-label="Deskripsi harus diisi">
+                    <q-input type="textarea"
+                             autofocus
+                             :before="[{icon: 'ion-document-text', handler(){}}]"
+                             placeholder="Deskripsi transaksi"
+                             class="group"
+                             v-model="deskripsi"
+                             @blur="$v.deskripsi.$touch"></q-input>
+                </q-field>
+
+                <q-field :error="$v.jumlah.$error"
+                         error-label="Jumlah transaksi harus ada"
+                         style="margin-bottom: 25px;">
+                    <q-input type="number"
+                             :before="[{icon: 'ion-cash', handler(){}}]"
+                             placeholder="Harga transaksi"
+                             class="group"
+                             v-model="jumlah"
+                             @blur="$v.jumlah.$touch"></q-input>
+                </q-field>
+                <q-btn color="grey" outline
+                       @click="$refs.basicModal.close()">Batal</q-btn>
+            </div>
+        </q-modal>
         <q-toolbar slot="footer">
             <q-toolbar-title class="text-center">
                 Saldo: {{saldo.detail.jumlah__sum}}
@@ -100,6 +130,7 @@
 </template>
 
 <script>
+    import {required} from 'vuelidate/lib/validators';
     import {
         QAlert,
         QLayout,
@@ -117,7 +148,10 @@
         QCardMain,
         QPopover,
         QInfiniteScroll,
-        QSpinnerFacebook
+        QSpinnerFacebook,
+        QModal,
+        QField,
+        QInput
     } from 'quasar';
 
     export default {
@@ -139,14 +173,25 @@
             QCardMain,
             QPopover,
             QInfiniteScroll,
-            QSpinnerFacebook
+            QSpinnerFacebook,
+            QModal,
+            QField,
+            QInput
         },
         data() {
             return {
                 user: null,
                 token: null,
-                alertShow: false
+                alertShow: false,
+                buka: false,
+                mode: null,
+                jumlah: 0,
+                deskripsi: null
             }
+        },
+        validations: {
+            jumlah: {required},
+            deskripsi: {required}
         },
         mounted() {
             const data = JSON.parse(localStorage.getItem('token'));
@@ -186,10 +231,15 @@
 
                     if (this.transaksi.previous && !this.transaksi.next) {
                         this.$refs.inf.stop();
+                        if (this.transaksi.count && this.transaksi.count === 0) this.alertShow = true;
                     }
 
                     done();
                 }, 1500)
+            },
+            basicModalShow(mode) {
+                this.buka = true;
+                this.mode = mode;
             }
         },
         filters: {
