@@ -118,7 +118,7 @@
                 <div class="row sm-gutter">
                     <div class="col">
                         <q-btn color="primary"
-                               icon="ion-log-in" class="full-width"
+                               class="full-width"
                                @click="prosesTransaksi(1)"
                                :disabled="$v.$invalid">
                             Uang Masuk
@@ -127,7 +127,7 @@
 
                     <div class="col">
                         <q-btn color="negative"
-                               icon="ion-log-out" class="full-width"
+                               class="full-width"
                                @click="prosesTransaksi(-1)"
                                :disabled="$v.$invalid">
                             Uang Keluar
@@ -138,7 +138,7 @@
         </q-modal>
         <q-toolbar slot="footer">
             <q-toolbar-title class="text-center">
-                Saldo: {{saldo.detail}}
+                Saldo: {{saldo}}
             </q-toolbar-title>
         </q-toolbar>
     </q-layout>
@@ -231,9 +231,7 @@
                 };
             },
             saldo() {
-                return this.$store.getters.get_saldo ? this.$store.getters.get_saldo : {
-                    detail: 0
-                };
+                return this.$store.getters.get_saldo ? this.$store.getters.get_saldo : 0;
             }
         },
         methods: {
