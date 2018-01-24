@@ -77,6 +77,9 @@ class Transaksi(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.TransaksiSerializer
 
+    def get_queryset(self):
+        return models.Transaksi.objects.filter(pemilik=self.request.user)
+
     def perform_create(self, serializer):
         serializer.save(pemilik=self.request.user)
 
