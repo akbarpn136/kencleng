@@ -7,6 +7,7 @@ Vue.use(Vuex);
 const URL = process.env.NODE_ENV === 'development' ?
     'http://localhost:8000/' :
     'http://bbta3.bppt.go.id:9602/';
+const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/`;
 
 export default new Vuex.Store({
     state: {
@@ -77,8 +78,11 @@ export default new Vuex.Store({
         set_transaksi_addon (state, payload) {
             state.transaksi_addon = payload;
         },
-        set_saldo (state, payload) {
+        hitung_saldo (state, payload) {
             state.saldo += payload;
+        },
+        set_saldo (state, payload) {
+            state.saldo = payload;
         },
         set_errors (state, err) {
             state.errors = err;
@@ -106,44 +110,26 @@ export default new Vuex.Store({
                 });
         },
         req_transaksi (context, payload) {
-            const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/`;
-            axios.get(URL_TRANSAKSI, {
+            return axios.get(URL_TRANSAKSI, {
                 headers: {'Authorization': `token ${payload.token}`},
                 params: {
                     page: payload.page
                 }
-            }).then((res) => {
-                context.commit('set_transaksi', res.data);
-            }).catch((err) => {
-                context.commit('set_errors', err.response.data);
             });
         },
         req_tambahTransaksi (context, payload) {
-            const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/`;
-            axios.post(URL_TRANSAKSI, payload.formData, {
+            return axios.post(URL_TRANSAKSI, payload.formData, {
                 headers: {'Authorization': `token ${payload.token}`}
-            }).then((res) => {
-                context.commit('set_transaksi_addon', res.data);
-            }).catch((err) => {
-                context.commit('set_errors', err.response.data);
             });
         },
         req_hapusTransaksi (context, payload) {
-            const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/${payload.id}/`;
-            axios.delete(URL_TRANSAKSI, {
+            return axios.delete(`${URL_TRANSAKSI}${payload.id}/`, {
                 headers: {'Authorization': `token ${payload.token}`}
-            }).catch((err) => {
-                context.commit('set_errors', err.response.data);
             });
         },
         req_saldo (context, payload) {
-            const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/saldo/`;
-            axios.get(URL_TRANSAKSI, {
+            return axios.get(`${URL_TRANSAKSI}saldo/`, {
                 headers: {'Authorization': `token ${payload.token}`},
-            }).then((res) => {
-                context.commit('set_saldo', res.data.detail);
-            }).catch((err) => {
-                context.commit('set_errors', err.response.data);
             });
         }
     }

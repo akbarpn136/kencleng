@@ -214,34 +214,32 @@
             this.token = data.token;
 
             this.$store.commit('reset_transaksi_lokal');
-            this.$store.dispatch('req_saldo', {
-                token: this.token
-            });
+            this.hitungSaldo();
         },
         computed: {
             transaksi_addon() {
-                return this.$store.getters.get_transaksi_addon ? this.$store.getters.get_transaksi_addon : {
-                    id: 0,
-                    deskripsi: null,
-                    jumlah: 0
-                };
+                return this.$store.getters.get_transaksi_addon ? this.$store.getters.get_transaksi_addon : {};
             },
             transaksi_lokal() {
                 return this.$store.getters.get_transaksi_lokal ? this.$store.getters.get_transaksi_lokal : [];
             },
             transaksi() {
-                return this.$store.getters.get_transaksi ? this.$store.getters.get_transaksi : {
-                    results: [],
-                    count: -1,
-                    next: null,
-                    previous: null
-                };
+                return this.$store.getters.get_transaksi ? this.$store.getters.get_transaksi : {};
             },
             saldo() {
                 return this.$store.getters.get_saldo ? this.$store.getters.get_saldo : 0;
             }
         },
         methods: {
+            hitungSaldo() {
+                this.$store.dispatch('req_saldo', {
+                    token: this.token
+                }).then((res) => {
+                    this.$store.commit('set_saldo', res.data.detail);
+                }).catch((err) => {
+                    this.$store.commit('set_errors', err.response.data);
+                });
+            },
             basicModalShow(mode) {
                 this.buka = true;
                 this.mode = mode;
@@ -251,11 +249,14 @@
                     this.$store.dispatch('req_transaksi', {
                         token: this.token,
                         page: index
-                    });
-
-                    this.$store.commit('set_transaksi_lokal', {
-                        data: this.transaksi.results,
-                        mode: 'online'
+                    }).then((res) => {
+                        this.$store.commit('set_transaksi', res.data);
+                        this.$store.commit('set_transaksi_lokal', {
+                            data: this.transaksi.results,
+                            mode: 'online'
+                        });
+                    }).catch((err) => {
+                        this.$store.commit('set_errors', err.response.data);
                     });
 
                     if (this.transaksi.count > 0) {
@@ -279,24 +280,25 @@
                 let transaksiLokal = this.$store.getters.get_transaksi_lokal;
 
                 if (!this.$v.$invalid) {
-                    this.$store.commit('set_saldo', gain * this.jumlah);
-
                     transaksiForm.set('deskripsi', this.deskripsi);
                     transaksiForm.set('jumlah', gain * this.jumlah);
 
                     this.$store.dispatch('req_tambahTransaksi', {
                         formData: transaksiForm,
                         token: this.token
-                    });
-
-                    this.buka = false;
-                    this.alertShow = false;
-                    this.deskripsi = null;
-                    this.jumlah = 0;
-                    console.log(this.transaksi_addon);
-                    this.$store.commit('set_transaksi_lokal', {
-                        data: [this.transaksi_addon],
-                        mode: 'offline'
+                    }).then((res) => {
+                        this.$store.commit('set_transaksi_addon', res.data);
+                        this.buka = false;
+                        this.alertShow = false;
+                        this.$store.commit('set_transaksi_lokal', {
+                            data: [this.transaksi_addon],
+                            mode: 'offline'
+                        });
+                        this.$store.commit('hitung_saldo', gain * this.jumlah);
+                        this.deskripsi = null;
+                        this.jumlah = 0;
+                    }).catch((err) => {
+                        this.$store.commit('set_errors', err.response.data);
                     });
                 }
             },
@@ -305,10 +307,14 @@
                     this.$store.dispatch('req_hapusTransaksi', {
                         id,
                         token: this.token
-                    });
-                    this.$store.commit('hapus_transaksi_lokal_tertentu', {
-                        id,
-                        data: this.transaksi_lokal
+                    }).then(() =>{
+                        this.$store.commit('hapus_transaksi_lokal_tertentu', {
+                            id,
+                            data: this.transaksi_lokal
+                        });
+                        this.hitungSaldo();
+                    }).catch((err) => {
+                        context.commit('set_errors', err.response.data);
                     });
                 } else {
                     console.log('ubah')
