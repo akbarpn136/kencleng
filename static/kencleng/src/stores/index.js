@@ -66,6 +66,11 @@ export default new Vuex.Store({
                 else state.transaksi_lokal.unshift(el);
             });
         },
+        hapus_transaksi_lokal_tertentu (state, payload) {
+            state.transaksi_lokal = payload.data.filter((el) => {
+                return el.id !== payload.id;
+            });
+        },
         reset_transaksi_lokal (state) {
             state.transaksi_lokal = [];
         },
@@ -117,8 +122,16 @@ export default new Vuex.Store({
             const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/`;
             axios.post(URL_TRANSAKSI, payload.formData, {
                 headers: {'Authorization': `token ${payload.token}`}
-            }).then(() => {
-                context.commit('set_transaksi_addon', payload.userInput);
+            }).then((res) => {
+                context.commit('set_transaksi_addon', res.data);
+            }).catch((err) => {
+                context.commit('set_errors', err.response.data);
+            });
+        },
+        req_hapusTransaksi (context, payload) {
+            const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/${payload.id}/`;
+            axios.delete(URL_TRANSAKSI, {
+                headers: {'Authorization': `token ${payload.token}`}
             }).catch((err) => {
                 context.commit('set_errors', err.response.data);
             });

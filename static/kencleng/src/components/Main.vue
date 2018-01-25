@@ -65,7 +65,7 @@
                                     <q-item @click="$refs.popover.close()">
                                         <q-item-main label="Ubah"/>
                                     </q-item>
-                                    <q-item @click="$refs.popover.close()">
+                                    <q-item @click="onKelolaTransaksi(trans.id, 'hapus')">
                                         <q-item-main label="Hapus"/>
                                     </q-item>
                                 </q-list>
@@ -219,6 +219,13 @@
             });
         },
         computed: {
+            transaksi_addon() {
+                return this.$store.getters.get_transaksi_addon ? this.$store.getters.get_transaksi_addon : {
+                    id: 0,
+                    deskripsi: null,
+                    jumlah: 0
+                };
+            },
             transaksi_lokal() {
                 return this.$store.getters.get_transaksi_lokal ? this.$store.getters.get_transaksi_lokal : [];
             },
@@ -270,12 +277,6 @@
             prosesTransaksi(gain) {
                 const transaksiForm = new FormData();
                 let transaksiLokal = this.$store.getters.get_transaksi_lokal;
-                const userInput = {
-                    id: Math.floor((1 + Math.random()) * 0x10000),
-                    dibuat: new Date().toLocaleDateString(),
-                    jumlah: gain * this.jumlah,
-                    deskripsi: this.deskripsi
-                }
 
                 if (!this.$v.$invalid) {
                     this.$store.commit('set_saldo', gain * this.jumlah);
@@ -285,16 +286,32 @@
 
                     this.$store.dispatch('req_tambahTransaksi', {
                         formData: transaksiForm,
-                        token: this.token,
-                        userInput
+                        token: this.token
                     });
 
                     this.buka = false;
                     this.alertShow = false;
+                    this.deskripsi = null;
+                    this.jumlah = 0;
+                    console.log(this.transaksi_addon);
                     this.$store.commit('set_transaksi_lokal', {
-                        data: [userInput],
+                        data: [this.transaksi_addon],
                         mode: 'offline'
                     });
+                }
+            },
+            onKelolaTransaksi(id, mode) {
+                if (mode === 'hapus') {
+                    this.$store.dispatch('req_hapusTransaksi', {
+                        id,
+                        token: this.token
+                    });
+                    this.$store.commit('hapus_transaksi_lokal_tertentu', {
+                        id,
+                        data: this.transaksi_lokal
+                    });
+                } else {
+                    console.log('ubah')
                 }
             }
         },
