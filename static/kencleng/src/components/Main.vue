@@ -147,6 +147,7 @@
 <script>
     import {required} from 'vuelidate/lib/validators';
     import {
+        Dialog,
         QAlert,
         QLayout,
         QToolbar,
@@ -304,17 +305,34 @@
             },
             onKelolaTransaksi(id, mode) {
                 if (mode === 'hapus') {
-                    this.$store.dispatch('req_hapusTransaksi', {
-                        id,
-                        token: this.token
-                    }).then(() =>{
-                        this.$store.commit('hapus_transaksi_lokal_tertentu', {
-                            id,
-                            data: this.transaksi_lokal
-                        });
-                        this.hitungSaldo();
-                    }).catch((err) => {
-                        context.commit('set_errors', err.response.data);
+                    Dialog.create({
+                        title: 'Perhatian',
+                        message: 'Transaksi yang dihapus tidak dapat dikembalikan lagi.',
+                        buttons: [
+                            'Batal',
+                            {
+                                label: 'OK, Hapus.',
+                                color: 'negative',
+                                handler: () => {
+                                    this.$store.dispatch('req_hapusTransaksi', {
+                                        id,
+                                        token: this.token
+                                    }).then(() => {
+                                        this.$store.commit('hapus_transaksi_lokal_tertentu', {
+                                            id,
+                                            data: this.transaksi_lokal
+                                        });
+                                        this.hitungSaldo();
+
+                                        if (this.transaksi_lokal.length === 0) {
+                                            this.alertShow = true;
+                                        }
+                                    }).catch((err) => {
+                                        context.commit('set_errors', err.response.data);
+                                    });
+                                }
+                            }
+                        ]
                     });
                 } else {
                     console.log('ubah')
