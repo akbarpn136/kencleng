@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^register/$', view=views.Register.as_view()),
     url(r'^change_password/$', view=views.ChangePassword.as_view()),
     url(r'^change_name/$', view=views.ChangeName.as_view()),
+    url(r'^current_user/$', view=views.GetCurrentUser.as_view()),
     url(r'^login/$', view=vw.obtain_auth_token),
     url(r'^v1/transaksi/$', view=views.Transaksi.as_view()),
     url(r'^v1/transaksi/saldo/$', view=views.TransaksiSum.as_view()),

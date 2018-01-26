@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from rest_framework import generics, permissions, status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -53,11 +54,17 @@ class ChangePassword(generics.CreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-        user = get_object_or_404(User, username=request.user)
-        user.set_password(request.POST.get('new_password'))
-        user.save()
+        auth = authenticate(username=request.user, password=request.POST.get('old_password'))
 
-        return Response({'detail': 'Password has been saved.'})
+        if auth is not None:
+            user = get_object_or_404(User, username=request.user)
+            user.set_password(request.POST.get('new_password'))
+            user.save()
+
+            return Response({'detail': 'Password sudah diganti.'})
+
+        else:
+            return Response({'detail': 'Password gagal diganti.'})
 
 
 class ChangeName(generics.UpdateAPIView):
@@ -67,9 +74,26 @@ class ChangeName(generics.UpdateAPIView):
         user = get_object_or_404(User, username=request.user)
         user.first_name = request.POST.get('first_name')
         user.last_name = request.POST.get('last_name')
+        user.email = request.POST.get('email')
         user.save()
 
-        return Response({'detail': 'Name has been saved.'})
+        return Response({'detail': 'Profil berhasil disimpan'})
+
+
+class GetCurrentUser(generics.RetrieveAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_object(self):
+        return get_object_or_404(User, pk=self.request.user.pk)
+
+    def get(self, request, *args, **kwargs):
+        user = self.get_object()
+
+        return Response({
+            'nama_depan': user.first_name,
+            'nama_belakang': user.last_name,
+            'email': user.email,
+        })
 
 
 class Transaksi(generics.ListCreateAPIView):
