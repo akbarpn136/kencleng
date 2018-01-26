@@ -20,22 +20,16 @@
         </q-toolbar>
 
         <div slot="left">
-            <!--
-              Use <q-side-link> component
-              instead of <q-item> for
-              internal vue-router navigation
-            -->
-
             <q-list no-border link inset-delimiter class="no-padding">
                 <q-list-header class="bg-primary text-white uppercase">{{user || 'Anonymouse'}}</q-list-header>
-                <q-item :to="{name: 'utama'}">
+                <q-side-link item exact :to="{name: 'utama'}">
                     <q-item-side icon="ion-home" class="text-white"/>
                     <q-item-main label="Utama" class="text-white text-bold"/>
-                </q-item>
-                <q-item>
+                </q-side-link>
+                <q-side-link item :to="{name: 'profil'}">
                     <q-item-side icon="ion-android-person" class="text-white"/>
                     <q-item-main label="Profil" class="text-white text-bold"/>
-                </q-item>
+                </q-side-link>
                 <q-item>
                     <q-item-side icon="ion-email" class="text-white"/>
                     <q-item-main label="Tentang aplikasi" class="text-white text-bold"/>
@@ -43,7 +37,13 @@
             </q-list>
         </div>
 
-        <div class="layout-padding">
+        <q-tabs slot="navigation" align="justify" v-if="routeTertentu">
+            <q-route-tab slot="title" :to="{name: 'profil'}" default replace label="Nama"/>
+            <q-route-tab slot="title" :to="{name: 'password'}" replace label="Password"/>
+        </q-tabs>
+
+        <div class="layout-padding"
+             v-if="$route.name === 'utama'">
             <q-alert
                 color="secondary"
                 icon="ion-information-circled"
@@ -136,7 +136,10 @@
                 </div>
             </div>
         </q-modal>
-        <q-toolbar slot="footer">
+        <router-view></router-view>
+        <q-toolbar
+            slot="footer"
+            v-if="$route.name === 'utama'">
             <q-toolbar-title class="text-center">
                 Saldo: {{saldo}}
             </q-toolbar-title>
@@ -158,6 +161,7 @@
         QList,
         QListHeader,
         QItem,
+        QSideLink,
         QItemSide,
         QItemMain,
         QCard,
@@ -168,7 +172,9 @@
         QSpinnerFacebook,
         QModal,
         QField,
-        QInput
+        QInput,
+        QTabs,
+        QRouteTab,
     } from 'quasar';
 
     export default {
@@ -183,6 +189,7 @@
             QList,
             QListHeader,
             QItem,
+            QSideLink,
             QItemSide,
             QItemMain,
             QCard,
@@ -193,7 +200,9 @@
             QSpinnerFacebook,
             QModal,
             QField,
-            QInput
+            QInput,
+            QTabs,
+            QRouteTab,
         },
         data() {
             return {
@@ -218,11 +227,19 @@
             const data = JSON.parse(localStorage.getItem('token'));
             this.user = data.user;
             this.token = data.token;
-
             this.$store.commit('reset_transaksi_lokal');
             this.hitungSaldo();
         },
+        beforeRouteUpdate(to, from, next) {
+            this.$store.commit('reset_transaksi_lokal');
+            next();
+        },
         computed: {
+            routeTertentu() {
+                if (this.$route.name === 'profil')
+                {return true;}
+                else if(this.$route.name === 'password') {return true}
+            },
             cek_jumlah() {
                 if (!this.$v.jumlah.required) {
                     return "Tidak boleh kosong.";

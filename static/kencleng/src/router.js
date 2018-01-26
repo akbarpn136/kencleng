@@ -25,7 +25,17 @@ const router = new VueRouter({
     scrollBehavior: () => ({y: 0}),
 
     routes: [
-        {path: '/', component: load('Main'), name: 'utama', meta: {requireAuth: true}},
+        {
+            path: '/', component: load('Main'), name: 'utama', meta: {requireAuth: true},
+            children: [
+                {
+                    path: 'profil', component: load('Profil'), name: 'profil'
+                },
+                {
+                    path: 'password', component: load('Password'), name: 'password'
+                }
+            ]
+        },
         {path: '/login', component: load('Login'), name: 'login', meta: {requireAuth: false}},
         {path: '/register', component: load('Register'), name: 'register', meta: {requireAuth: false}},
 
