@@ -67,10 +67,19 @@ export default new Vuex.Store({
                 else state.transaksi_lokal.unshift(el);
             });
         },
-        hapus_transaksi_lokal_tertentu (state, payload) {
-            state.transaksi_lokal = payload.data.filter((el) => {
-                return el.id !== payload.id;
-            });
+        set_transaksi_lokal_tertentu: (state, payload) => {
+            if (payload.mode === 'hapus') {
+                state.transaksi_lokal = payload.data.filter((el) => {
+                    return (el.id !== payload.id)
+                });
+            } else {
+                state.transaksi_addon = payload.data.filter((el) => {
+                    return (el.id === payload.id)
+                });
+            }
+        },
+        update_transaksi_lokal (state, payload) {
+            payload.lama.splice(payload.index, 1, payload.baru);
         },
         reset_transaksi_lokal (state) {
             state.transaksi_lokal = [];
@@ -119,6 +128,11 @@ export default new Vuex.Store({
         },
         req_tambahTransaksi (context, payload) {
             return axios.post(URL_TRANSAKSI, payload.formData, {
+                headers: {'Authorization': `token ${payload.token}`}
+            });
+        },
+        req_ubahTransaksi (context, payload) {
+            return axios.put(`${URL_TRANSAKSI}${payload.id}/`, payload.formData, {
                 headers: {'Authorization': `token ${payload.token}`}
             });
         },

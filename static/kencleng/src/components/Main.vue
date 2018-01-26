@@ -45,7 +45,7 @@
 
         <div class="layout-padding">
             <q-alert
-                color="blue"
+                color="secondary"
                 icon="ion-information-circled"
                 style="margin-bottom: 25px;" v-if="alertShow">
                 Transaksi masih kosong. Coba tambah baru.
@@ -62,7 +62,7 @@
                         <q-icon link slot="right" name="more_vert">
                             <q-popover ref="popover">
                                 <q-list link class="no-border">
-                                    <q-item @click="$refs.popover.close()">
+                                    <q-item @click="onKelolaTransaksi(trans.id, 'ubah')">
                                         <q-item-main label="Ubah"/>
                                     </q-item>
                                     <q-item @click="onKelolaTransaksi(trans.id, 'hapus')">
@@ -105,7 +105,7 @@
                 </q-field>
 
                 <q-field :error="$v.jumlah.$error"
-                         error-label="Jumlah transaksi harus ada"
+                         :error-label="cek_jumlah"
                          style="margin-bottom: 25px;">
                     <q-input type="number"
                              :before="[{icon: 'ion-cash', handler(){}}]"
@@ -145,8 +145,9 @@
 </template>
 
 <script>
-    import {required} from 'vuelidate/lib/validators';
+    import {required, minValue} from 'vuelidate/lib/validators';
     import {
+        Loading,
         Dialog,
         QAlert,
         QLayout,
@@ -196,6 +197,7 @@
         },
         data() {
             return {
+                id: null,
                 user: null,
                 token: null,
                 alertShow: false,
@@ -206,7 +208,10 @@
             }
         },
         validations: {
-            jumlah: {required},
+            jumlah: {
+                required,
+                minValue: minValue(0)
+            },
             deskripsi: {required}
         },
         mounted() {
@@ -218,6 +223,13 @@
             this.hitungSaldo();
         },
         computed: {
+            cek_jumlah() {
+                if (!this.$v.jumlah.required) {
+                    return "Tidak boleh kosong.";
+                } else if (!this.$v.jumlah.minValue) {
+                    return "Tidak boleh kurang dari 0.";
+                }
+            },
             transaksi_addon() {
                 return this.$store.getters.get_transaksi_addon ? this.$store.getters.get_transaksi_addon : {};
             },
@@ -232,6 +244,10 @@
             }
         },
         methods: {
+            clearForm() {
+                this.jumlah = 0;
+                this.deskripsi = null;
+            },
             hitungSaldo() {
                 this.$store.dispatch('req_saldo', {
                     token: this.token
@@ -277,27 +293,48 @@
                 }, 1000)
             },
             prosesTransaksi(gain) {
+                let dispatch_mode = null;
                 const transaksiForm = new FormData();
                 let transaksiLokal = this.$store.getters.get_transaksi_lokal;
 
                 if (!this.$v.$invalid) {
+                    this.buka = false;
+                    Loading.show({
+                        spinner: QSpinnerFacebook
+                    });
+
                     transaksiForm.set('deskripsi', this.deskripsi);
                     transaksiForm.set('jumlah', gain * this.jumlah);
 
-                    this.$store.dispatch('req_tambahTransaksi', {
+                    if (this.mode === 'ubah') {
+                        dispatch_mode = 'req_ubahTransaksi';
+                    } else {
+                        dispatch_mode = 'req_tambahTransaksi';
+                    }
+                    this.$store.dispatch(dispatch_mode, {
+                        id: this.id,
                         formData: transaksiForm,
                         token: this.token
                     }).then((res) => {
                         this.$store.commit('set_transaksi_addon', res.data);
-                        this.buka = false;
                         this.alertShow = false;
-                        this.$store.commit('set_transaksi_lokal', {
-                            data: [this.transaksi_addon],
-                            mode: 'offline'
-                        });
-                        this.$store.commit('hitung_saldo', gain * this.jumlah);
-                        this.deskripsi = null;
-                        this.jumlah = 0;
+                        if (this.mode === 'ubah') {
+                            this.$store.commit('update_transaksi_lokal', {
+                                lama: this.transaksi_lokal,
+                                baru: this.transaksi_addon,
+                                index: this.transaksi_lokal.findIndex((el) => {return el.id === this.id})
+                            });
+                            this.hitungSaldo();
+                        } else {
+                            this.$store.commit('set_transaksi_lokal', {
+                                data: [this.transaksi_addon],
+                                mode: 'offline'
+                            });
+                            this.$store.commit('hitung_saldo', gain * this.jumlah);
+                        }
+
+                        this.clearForm();
+                        Loading.hide();
                     }).catch((err) => {
                         this.$store.commit('set_errors', err.response.data);
                     });
@@ -311,22 +348,27 @@
                         buttons: [
                             'Batal',
                             {
-                                label: 'OK, Hapus.',
+                                label: 'OK, Hapus',
                                 color: 'negative',
                                 handler: () => {
+                                    Loading.show({
+                                        spinner: QSpinnerFacebook
+                                    });
                                     this.$store.dispatch('req_hapusTransaksi', {
                                         id,
                                         token: this.token
                                     }).then(() => {
-                                        this.$store.commit('hapus_transaksi_lokal_tertentu', {
+                                        this.$store.commit('set_transaksi_lokal_tertentu', {
                                             id,
-                                            data: this.transaksi_lokal
+                                            data: this.transaksi_lokal,
+                                            mode
                                         });
                                         this.hitungSaldo();
 
                                         if (this.transaksi_lokal.length === 0) {
                                             this.alertShow = true;
                                         }
+                                        Loading.hide();
                                     }).catch((err) => {
                                         context.commit('set_errors', err.response.data);
                                     });
@@ -335,7 +377,17 @@
                         ]
                     });
                 } else {
-                    console.log('ubah')
+                    this.basicModalShow(mode);
+                    this.$store.commit('set_transaksi_lokal_tertentu', {
+                        id,
+                        data: this.transaksi_lokal,
+                        mode
+                    });
+
+                    const data_transaksi = this.$store.getters.get_transaksi_addon;
+                    this.jumlah = (data_transaksi[0].jumlah > 0) ? data_transaksi[0].jumlah : -1 * data_transaksi[0].jumlah;
+                    this.deskripsi = data_transaksi[0].deskripsi;
+                    this.id = data_transaksi[0].id;
                 }
             }
         },
