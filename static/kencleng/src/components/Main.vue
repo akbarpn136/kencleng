@@ -231,7 +231,9 @@
             this.hitungSaldo();
         },
         beforeRouteUpdate(to, from, next) {
-            this.$store.commit('reset_transaksi_lokal');
+            if (from.name === 'main') {
+                this.$store.commit('reset_transaksi_lokal');
+            }
             next();
         },
         computed: {
@@ -291,6 +293,7 @@
                         });
                     }).catch((err) => {
                         this.$store.commit('set_errors', err.response.data);
+                        Loading.hide();
                     });
 
                     if (this.transaksi.count > 0) {

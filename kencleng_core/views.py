@@ -61,10 +61,13 @@ class ChangePassword(generics.CreateAPIView):
             user.set_password(request.POST.get('new_password'))
             user.save()
 
+            tkn = Token.objects.update_or_create(user=user)
+            print(tkn)
+
             return Response({'detail': 'Password sudah diganti.'})
 
         else:
-            return Response({'detail': 'Password gagal diganti.'})
+            return Response({'detail': 'Password gagal diganti.'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 class ChangeName(generics.UpdateAPIView):

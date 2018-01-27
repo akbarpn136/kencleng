@@ -8,6 +8,7 @@ const URL = process.env.NODE_ENV === 'development' ?
     'http://localhost:8000/' :
     'http://bbta3.bppt.go.id:9602/';
 const URL_TRANSAKSI = `${URL}kencleng/v1/transaksi/`;
+const URL_OTEN = `${URL}kencleng/`;
 
 export default new Vuex.Store({
     state: {
@@ -99,8 +100,7 @@ export default new Vuex.Store({
     },
     actions: {
         req_credential (context, payload) {
-            const URL_OTEN = `${URL}kencleng/login/`;
-            axios.post(URL_OTEN, payload.formData)
+            axios.post(`${URL_OTEN}login/`, payload.formData)
                 .then((res) => {
                     context.commit('set_credential', {user: payload.user, token: res.data});
                 })
@@ -109,8 +109,7 @@ export default new Vuex.Store({
                 });
         },
         req_register (context, payload) {
-            const URL_OTEN = `${URL}kencleng/register/`;
-            axios.post(URL_OTEN, payload.formData)
+            axios.post(`${URL_OTEN}register/`, payload.formData)
                 .then((res) => {
                     context.commit('set_credential', {user: payload.user, token: res.data});
                 })
@@ -145,6 +144,21 @@ export default new Vuex.Store({
             return axios.get(`${URL_TRANSAKSI}saldo/`, {
                 headers: {'Authorization': `token ${payload.token}`},
             });
-        }
+        },
+        req_current_user (context, payload) {
+            return axios.get(`${URL_OTEN}current_user/`, {
+                headers: {'Authorization': `token ${payload.token}`},
+            });
+        },
+        req_ubahProfil (context, payload) {
+            return axios.put(`${URL_OTEN}change_name/`, payload.formData, {
+                headers: {'Authorization': `token ${payload.token}`}
+            });
+        },
+        req_ubahPassword (context, payload) {
+            return axios.post(`${URL_OTEN}change_password/`, payload.formData, {
+                headers: {'Authorization': `token ${payload.token}`}
+            });
+        },
     }
 });

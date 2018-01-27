@@ -52,6 +52,7 @@
 <script>
     import {required, email, sameAs, minLength} from 'vuelidate/lib/validators';
     import {
+        Toast,
         Loading,
         QBtn,
         QCard,
@@ -66,6 +67,7 @@
         name: "profil",
         data() {
             return {
+                token: null,
                 nama_depan: null,
                 nama_belakang: null,
                 email: null
@@ -74,7 +76,25 @@
         validations: {
             email: {required, email}
         },
+        created() {
+            const data = JSON.parse(localStorage.getItem('token'));
+            this.token = data.token;
+            Loading.show({
+                spinner: QSpinnerFacebook
+            });
+            this.$store.dispatch('req_current_user', {token: this.token})
+                .then(res => {
+                    this.nama_depan = res.data.nama_depan;
+                    this.nama_belakang = res.data.nama_belakang;
+                    this.email = res.data.email;
+                    Loading.hide();
+                }).catch(err => {
+                    console.log(err.response.data);
+                    Loading.hide();
+            });
+        },
         components: {
+            Toast,
             Loading,
             QBtn,
             QCard,
@@ -86,7 +106,25 @@
         },
         methods: {
             ganti_profil() {
-                console.log('ganti')
+                const profilForm = new FormData();
+                profilForm.set('first_name', this.nama_depan);
+                profilForm.set('last_name', this.nama_belakang);
+                profilForm.set('email', this.email);
+
+                Loading.show({
+                    spinner: QSpinnerFacebook
+                });
+
+                this.$store.dispatch('req_ubahProfil', {
+                    token: this.token,
+                    formData: profilForm
+                }).then(() => {
+                    Loading.hide();
+                    Toast.create.positive('Profil berhasil disimpan');
+                }).catch(() => {
+                    Loading.hide();
+                    Toast.create.negative('Ada kesalahan penyimpanan profil');
+                });
             }
         },
         computed: {

@@ -41,7 +41,7 @@
                 <q-btn color="negative"
                        class="full-width uppercase"
                        big
-                       @click="ganti_profil"
+                       @click="ganti_password"
                        style="margin-top: 25px"
                        :disabled="$v.$invalid">
                     Simpan
@@ -57,6 +57,7 @@
         QTabs,
         QRouteTab,
         Loading,
+        Toast,
         QBtn,
         QCard,
         QCardTitle,
@@ -70,6 +71,7 @@
         name: "profil",
         data() {
             return {
+                token: null,
                 password_lama: null,
                 password_baru: null,
                 password_konfirmasi: null
@@ -79,6 +81,10 @@
             password_lama: {required},
             password_baru: {required},
             password_konfirmasi: {sameAs: sameAs('password_baru')},
+        },
+        created() {
+            const data = JSON.parse(localStorage.getItem('token'));
+            this.token = data.token;
         },
         components: {
             QTabs,
@@ -93,8 +99,25 @@
             QInput,
         },
         methods: {
-            ganti_profil() {
-                console.log('ganti')
+            ganti_password() {
+                const passwordForm = new FormData();
+                passwordForm.set('new_password', this.password_baru);
+                passwordForm.set('old_password', this.password_lama);
+
+                Loading.show({
+                    spinner: QSpinnerFacebook
+                });
+
+                this.$store.dispatch('req_ubahPassword', {
+                    formData: passwordForm,
+                    token: this.token
+                }).then(() => {
+                    Loading.hide();
+                    Toast.create.positive('Password berhasil diganti');
+                }).catch((err) => {
+                    Loading.hide();
+                    Toast.create.negative(`Error: ${err.response.data.detail}`);
+                });
             }
         }
     }
