@@ -33,6 +33,9 @@ const router = new VueRouter({
                 },
                 {
                     path: 'password', component: load('Password'), name: 'password'
+                },
+                {
+                    path: 'tentang', component: load('Tentang'), name: 'tentang'
                 }
             ]
         },

@@ -30,14 +30,14 @@
                     <q-item-side icon="ion-android-person" class="text-white"/>
                     <q-item-main label="Profil" class="text-white text-bold"/>
                 </q-side-link>
-                <q-item>
+                <q-side-link item :to="{name: 'tentang'}">
                     <q-item-side icon="ion-email" class="text-white"/>
                     <q-item-main label="Tentang aplikasi" class="text-white text-bold"/>
-                </q-item>
+                </q-side-link>
                 <q-item>
                     <q-btn
                         color="negative"
-                        class="full-width fixed-bottom layout-padding md-hide lg-hide"
+                        class="full-width fixed-bottom layout-padding md-hide lg-hide xl-hide"
                         icon="ion-log-out"
                         @click="onKeluar">
                         Keluar
