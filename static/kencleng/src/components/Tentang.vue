@@ -2,7 +2,9 @@
     <div class="layout-padding">
         <q-card class="bg-white">
             <q-card-media>
-                <q-video src="https://www.youtube.com/watch?v=_0NarCGgPjw"/>
+                <div class="q-video">
+                    <iframe width="560" height="325" src="https://www.youtube.com/embed/_0NarCGgPjw" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                </div>
             </q-card-media>
             <q-card-title>
                 Aplikasi Kencleng
