@@ -37,7 +37,14 @@
                 <q-item>
                     <q-btn
                         color="negative"
-                        class="full-width fixed-bottom layout-padding"
+                        class="full-width fixed-bottom layout-padding md-hide lg-hide"
+                        icon="ion-log-out"
+                        @click="onKeluar">
+                        Keluar
+                    </q-btn>
+                    <q-btn
+                        color="negative"
+                        class="full-width xs-hide sm-hide"
                         icon="ion-log-out"
                         @click="onKeluar">
                         Keluar
@@ -241,6 +248,19 @@
             if (this.$route.name === 'utama') {
                 this.hitungSaldo();
             }
+
+            if (this.$q.platform.is.android) {
+                let admobid = {
+                    banner: 'ca-app-pub-5520309783401636/1689719331',
+                    interstitial: 'ca-app-pub-5520309783401636/3025307142'
+                }
+
+                window.AdMob.createBanner({
+                  bannerId: admobid.banner,
+                  position: window.AdMob.AD_POSITION.BOTTOM_CENTER,
+                  autoShow: true
+                });
+            }
         },
         beforeRouteUpdate(to, from, next) {
             this.$store.commit('reset_transaksi_lokal');
@@ -369,8 +389,20 @@
 
                         this.clearForm();
                         Loading.hide();
+
+                        if (this.$q.platform.is.android) {
+                            let admobid = {
+                                banner: 'ca-app-pub-5520309783401636/1689719331',
+                                interstitial: 'ca-app-pub-5520309783401636/3025307142'
+                            }
+
+                            window.AdMob.prepareInterstitial({
+                                interstitialId: admobid.interstitial,
+                                autoShow: true
+                            });
+                        }
                     }).catch((err) => {
-                        this.$store.commit('set_errors', err.response.data);
+                        this.$store.commit('set_errors', err.response);
                         if (!navigator.onLine) Loading.hide();
                     });
 
