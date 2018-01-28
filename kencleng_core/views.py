@@ -61,9 +61,6 @@ class ChangePassword(generics.CreateAPIView):
             user.set_password(request.POST.get('new_password'))
             user.save()
 
-            tkn = Token.objects.update_or_create(user=user)
-            print(tkn)
-
             return Response({'detail': 'Password sudah diganti.'})
 
         else:

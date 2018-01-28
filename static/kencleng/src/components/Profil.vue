@@ -79,9 +79,11 @@
         created() {
             const data = JSON.parse(localStorage.getItem('token'));
             this.token = data.token;
+
             Loading.show({
                 spinner: QSpinnerFacebook
             });
+
             this.$store.dispatch('req_current_user', {token: this.token})
                 .then(res => {
                     this.nama_depan = res.data.nama_depan;
@@ -92,6 +94,11 @@
                     console.log(err.response.data);
                     Loading.hide();
             });
+
+            if (navigator.onLine) {
+                Loading.hide();
+                Toast.create.negative('Sorry. No network connection');
+            }
         },
         components: {
             Toast,

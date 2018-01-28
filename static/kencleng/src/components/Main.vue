@@ -150,6 +150,7 @@
 <script>
     import {required, minValue} from 'vuelidate/lib/validators';
     import {
+        Toast,
         Loading,
         Dialog,
         QAlert,
@@ -228,7 +229,9 @@
             this.user = data.user;
             this.token = data.token;
             this.$store.commit('reset_transaksi_lokal');
-            this.hitungSaldo();
+            if (this.$route.name === 'utama') {
+                this.hitungSaldo();
+            }
         },
         beforeRouteUpdate(to, from, next) {
             if (from.name === 'main') {
@@ -307,6 +310,9 @@
                     } else if (this.transaksi.count === 0) {
                         this.$refs.inf.stop();
                         this.alertShow = true;
+                    } else if (navigator.onLine) {
+                        Toast.create.negative('Sorry. No network connection');
+                        this.$refs.inf.stop();
                     }
 
                     done();
@@ -331,6 +337,7 @@
                     } else {
                         dispatch_mode = 'req_tambahTransaksi';
                     }
+
                     this.$store.dispatch(dispatch_mode, {
                         id: this.id,
                         formData: transaksiForm,
@@ -357,7 +364,13 @@
                         Loading.hide();
                     }).catch((err) => {
                         this.$store.commit('set_errors', err.response.data);
+                        if (navigator.onLine) Loading.hide();
                     });
+
+                    if (navigator.onLine) {
+                        Loading.hide();
+                        Toast.create.negative('Sorry. No network connection');
+                    }
                 }
             },
             onKelolaTransaksi(id, mode) {

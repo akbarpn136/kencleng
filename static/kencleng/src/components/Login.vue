@@ -81,6 +81,7 @@
     import 'quasar-extras/animate/bounceInDown.css'
     import 'quasar-extras/animate/bounceOutUp.css'
     import {
+        Toast,
         QField,
         QInput,
         QBtn,
@@ -121,6 +122,10 @@
 
                 this.$store.commit('set_errors', null);
                 this.$store.dispatch('req_credential', {user: this.username, formData: formAuth});
+
+                if (navigator.onLine) {
+                    Toast.create.negative('Sorry. No network connection');
+                }
             }
         },
         computed: {
