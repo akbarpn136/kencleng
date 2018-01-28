@@ -95,7 +95,7 @@
                     Loading.hide();
             });
 
-            if (navigator.onLine) {
+            if (!navigator.onLine) {
                 Loading.hide();
                 Toast.create.negative('Sorry. No network connection');
             }

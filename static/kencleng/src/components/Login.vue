@@ -100,11 +100,18 @@
             QLayout,
             QToolbar,
         },
+        created() {
+            this.token = localStorage.getItem('token');
+            if (this.token) {
+                this.$router.push({name: 'utama'});
+            }
+        },
         data() {
             return {
                 username: null,
                 password: null,
-                pesan: null
+                pesan: null,
+                token: null
             }
         },
         validations: {
@@ -123,7 +130,7 @@
                 this.$store.commit('set_errors', null);
                 this.$store.dispatch('req_credential', {user: this.username, formData: formAuth});
 
-                if (navigator.onLine) {
+                if (!navigator.onLine) {
                     Toast.create.negative('Sorry. No network connection');
                 }
             }
@@ -133,7 +140,7 @@
                 get() {
                     const pesan = this.$store.getters.get_errors;
 
-                    if (pesan) {
+                    if (pesan && !this.token) {
                         this.pesan = pesan.non_field_errors[0];
                         return true
                     } else {

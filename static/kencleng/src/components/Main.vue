@@ -34,6 +34,15 @@
                     <q-item-side icon="ion-email" class="text-white"/>
                     <q-item-main label="Tentang aplikasi" class="text-white text-bold"/>
                 </q-item>
+                <q-item>
+                    <q-btn
+                        color="negative"
+                        class="full-width fixed-bottom layout-padding"
+                        icon="ion-log-out"
+                        @click="onKeluar">
+                        Keluar
+                    </q-btn>
+                </q-item>
             </q-list>
         </div>
 
@@ -234,9 +243,7 @@
             }
         },
         beforeRouteUpdate(to, from, next) {
-            if (from.name === 'main') {
-                this.$store.commit('reset_transaksi_lokal');
-            }
+            this.$store.commit('reset_transaksi_lokal');
             next();
         },
         computed: {
@@ -310,7 +317,7 @@
                     } else if (this.transaksi.count === 0) {
                         this.$refs.inf.stop();
                         this.alertShow = true;
-                    } else if (navigator.onLine) {
+                    } else if (!navigator.onLine) {
                         Toast.create.negative('Sorry. No network connection');
                         this.$refs.inf.stop();
                     }
@@ -364,10 +371,10 @@
                         Loading.hide();
                     }).catch((err) => {
                         this.$store.commit('set_errors', err.response.data);
-                        if (navigator.onLine) Loading.hide();
+                        if (!navigator.onLine) Loading.hide();
                     });
 
-                    if (navigator.onLine) {
+                    if (!navigator.onLine) {
                         Loading.hide();
                         Toast.create.negative('Sorry. No network connection');
                     }
@@ -422,6 +429,9 @@
                     this.deskripsi = data_transaksi[0].deskripsi;
                     this.id = data_transaksi[0].id;
                 }
+            },
+            onKeluar() {
+                this.$router.push({name: 'login'});
             }
         },
         filters: {

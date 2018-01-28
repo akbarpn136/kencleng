@@ -189,7 +189,7 @@
                 this.$store.commit('set_errors', null);
                 this.$store.dispatch('req_register', {user: this.username, formData: formDaftar});
 
-                if (navigator.onLine) {
+                if (!navigator.onLine) {
                     Toast.create.negative('Sorry. No network connection');
                 }
             }

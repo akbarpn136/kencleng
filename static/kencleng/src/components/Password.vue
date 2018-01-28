@@ -116,7 +116,7 @@
                     Toast.create.positive('Password berhasil diganti');
                 }).catch((err) => {
                     Loading.hide();
-                    if (navigator.onLine) {
+                    if (!navigator.onLine) {
                         Toast.create.negative('Sorry. No network connection');
                     } else {
                         Toast.create.negative(`Error: ${err.response.data.detail}`);
