@@ -57,6 +57,7 @@ export default new Vuex.Store({
                 state.credential.username = null;
                 state.credential.token = null;
                 localStorage.removeItem('token');
+                router.push({name: 'login'});
             }
         },
         set_transaksi (state, payload) {
@@ -100,13 +101,7 @@ export default new Vuex.Store({
     },
     actions: {
         req_credential (context, payload) {
-            axios.post(`${URL_OTEN}login/`, payload.formData)
-                .then((res) => {
-                    context.commit('set_credential', {user: payload.user, token: res.data});
-                })
-                .catch((err) => {
-                    context.commit('set_errors', err.response.data);
-                });
+            return axios.post(`${URL_OTEN}login/`, payload.formData);
         },
         req_register (context, payload) {
             axios.post(`${URL_OTEN}register/`, payload.formData)

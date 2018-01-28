@@ -81,6 +81,7 @@
     import 'quasar-extras/animate/bounceInDown.css'
     import 'quasar-extras/animate/bounceOutUp.css'
     import {
+        Loading,
         Toast,
         QField,
         QInput,
@@ -88,6 +89,7 @@
         QAlert,
         QLayout,
         QToolbar,
+        QSpinnerFacebook
     } from 'quasar';
 
     export default {
@@ -98,7 +100,7 @@
             QBtn,
             QAlert,
             QLayout,
-            QToolbar,
+            QToolbar
         },
         created() {
             this.token = localStorage.getItem('token');
@@ -111,6 +113,7 @@
                 username: null,
                 password: null,
                 pesan: null,
+                error: false,
                 token: null
             }
         },
@@ -128,28 +131,26 @@
                 formAuth.set('password', this.password);
 
                 this.$store.commit('set_errors', null);
-                this.$store.dispatch('req_credential', {user: this.username, formData: formAuth});
+
+                Loading.show({
+                    spinner: QSpinnerFacebook
+                });
+
+                this.$store.dispatch('req_credential', {user: this.username, formData: formAuth})
+                    .then((res) => {
+                        this.$store.commit('set_credential', {user: this.username, token: res.data});
+                        this.error = false;
+                        this.pesan = null;
+                        Loading.hide();
+                    }).catch((err) => {
+                        this.$store.commit('set_errors', err.response.data);
+                        this.error = true;
+                        this.pesan = err.response.data.non_field_errors[0];
+                        Loading.hide();
+                });
 
                 if (!navigator.onLine) {
                     Toast.create.negative('Sorry. No network connection');
-                }
-            }
-        },
-        computed: {
-            error: {
-                get() {
-                    const pesan = this.$store.getters.get_errors;
-
-                    if (pesan && !this.token) {
-                        this.pesan = pesan.non_field_errors[0];
-                        return true
-                    } else {
-                        this.pesan = null;
-                        return false;
-                    }
-                },
-                set(val) {
-                    return;
                 }
             }
         }

@@ -431,7 +431,7 @@
                 }
             },
             onKeluar() {
-                this.$router.push({name: 'login'});
+                this.$store.commit('set_credential');
             }
         },
         filters: {
